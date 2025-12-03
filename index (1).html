@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bio Data</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- PDF and Screenshot Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #e2e8f0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+    .container:hover {
+      transform: scale(1.01);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+    }
+    .header {
+      background-color: #2c5282;
+      color: white;
+      padding: 10px 0;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      position: relative;
+      border-radius: 12px 12px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+    .header-text {
+      border: 2px solid white;
+      padding: 8px 24px;
+      border-radius: 9999px;
+      letter-spacing: 2px;
+      font-size: 1.5rem;
+      animation: rotate-text 4s linear infinite;
+    }
+    @keyframes rotate-text {
+      from { transform: rotateY(0deg); }
+      to { transform: rotateY(360deg); }
+    }
+    .icon { font-size: 32px; }
+    .download-btn {
+      background-color: transparent;
+      border: none;
+      color: white;
+      cursor: pointer;
+      position: absolute;
+      top: 50%;
+      right: 20px;
+      transform: translateY(-50%) scale(1);
+      transition: transform 0.3s ease-in-out;
+    }
+    .download-btn:hover {
+      transform: translateY(-50%) scale(1.1);
+    }
+    .section-header {
+      background-image: linear-gradient(to right, #4a90e2, #50e3c2);
+      color: white;
+      font-weight: bold;
+      padding: 12px 24px;
+      border-radius: 8px;
+      margin: 16px 24px 8px 24px;
+      display: flex;
+      align-items: center;
+      position: relative;
+      transition: all 0.3s ease-in-out;
+    }
+    .section-header:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    .section-header::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      height: 2px;
+      background-color: #cbd5e1;
+    }
+    .section-content {
+      padding: 0 24px 16px;
+    }
+    .thank-you {
+      text-align: center;
+      margin-top: 20px;
+      padding: 16px;
+      background-color: #cbd5e1;
+      color: #4b5563;
+      border-radius: 0 0 12px 12px;
+      font-style: italic;
+    }
+    #splash-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #1a202c;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 1;
+      transition: opacity 0.5s ease-in-out;
+    }
+    .splash-content {
+      color: #ffffff;
+      text-align: center;
+      transform: scale(1);
+      transition: transform 0.5s ease-in-out;
+    }
+    .bio-section {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+    }
+    .container.show-content .bio-section {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    @media (max-width: 768px) {
+      .download-btn { right: 10px; }
+      .profile-image-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1rem;
+      }
+      .section-content .text-gray-900,
+      .section-content .font-medium {
+        font-size: 0.8rem;
+      }
+      .header-text {
+        font-size: 1.25rem;
+        padding: 6px 18px;
+      }
+      .section-header h2 {
+        font-size: 0.9rem;
+      }
+    }
+    .personal-details-section {
+      background: linear-gradient(-45deg, #e2e8f0, #ffffff, #e2e8f0, #f8fafc);
+      background-size: 400% 400%;
+      animation: gradient-animation 15s ease infinite;
+    }
+    @keyframes gradient-animation {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .profile-image {
+      border-radius: 50%;
+      border: 4px solid #4a90e2;
+    }
+    .profile-image-container {
+      position: relative;
+      z-index: 10;
+    }
+    .profile-image-container::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      right: -10px;
+      bottom: -10px;
+      border: 4px solid transparent;
+      border-radius: 50%;
+      background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8);
+      background-size: 400%;
+      z-index: -1;
+      animation: rotating-animation 10s linear infinite;
+    }
+    @keyframes rotating-animation {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Splash Screen -->
+  <div id="splash-screen">
+    <div class="splash-content">
+      <h1 class="text-4xl font-bold mb-4">Loading Bio Data</h1>
+      <div class="text-xl">Please Wait...</div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div id="main-content" class="container mx-auto px-4 rounded-xl shadow-lg">
+    <!-- Main Header -->
+    <div class="header">
+      <span class="icon">&#9788;</span>
+      <div class="flex flex-col items-center">
+        <div class="text-sm font-normal">JAI SIYA RAM</div>
+        <div class="header-text">BIO DATA</div>
+      </div>
+      <span class="icon">&#9788;</span>
+      <button class="download-btn" onclick="downloadBiodata()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             class="feather feather-download">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Personal Details Section -->
+    <div class="bio-section personal-details-section">
+      <div class="section-header">
+        <h2 class="text-lg">PERSONAL DETAILS:</h2>
+      </div>
+      <div class="section-content flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-8">
+       <div class="profile-image-container flex-shrink-0 mx-auto md:mx-0">
+        <!-- Changed to make image clickable -->
+        <a href="img.html">
+            <img src="Ajit S.png" alt="Profile"
+                class="profile-image w-32 h-32 md:w-48 md:h-48 lg:w-56 lg:h-56 object-cover">
+        </a>
+        </div>
+        <div class="grid grid-cols-2 gap-2 md:grid-cols-[1fr_2fr] md:gap-4 flex-grow">
+          <div class="font-medium text-gray-600">Name</div>
+          <div class="text-gray-900"><strong>Ajit Kumar Singh</strong></div>
+          <div class="font-medium text-gray-600">Date Of Birth</div>
+          <div class="text-gray-900"><strong>13/12/1993</strong></div>
+          <div class="font-medium text-gray-600">Place Of Birth</div>
+          <div class="text-gray-900"><strong>Ballia / 7:30 AM</strong></div>
+          <div class="font-medium text-gray-600">Languages Known</div>
+          <div class="text-gray-900"><b>Hindi, English.</b></div>
+          <div class="font-medium text-gray-600">Height</div>
+          <div class="text-gray-900"><b>5.5 Feet</b></div>
+          <div class="font-medium text-gray-600">Weight</div>
+          <div class="text-gray-900"><b>63 Kg</b></div>
+          <div class="font-medium text-gray-600">Complexion</div>
+          <div class="text-gray-900"><b>Wheat</b></div>
+          <div class="font-medium text-gray-600">Food Reference</div>
+          <div class="text-gray-900"><b>Veg / Non Veg</b></div>
+          <div class="font-medium text-gray-600">Blood Group</div>
+          <div class="text-gray-900"><b>A-</b></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Details Section -->
+    <div class="bio-section">
+      <div class="section-header">
+        <h2 class="text-lg">CONTACT DETAILS:</h2>
+      </div>
+      <div class="section-content grid grid-cols-2 md:grid-cols-[1fr_2fr] gap-2 md:gap-4">
+        <div class="font-medium text-gray-600">Mobile No.</div>
+        <div class="text-gray-900"><b>9315347836</b>, 9458696836</div>
+        <div class="font-medium text-gray-600">Email</div>
+        <div class="text-gray-900"><b>ajits711@gmail.com</b></div>
+        <div class="font-medium text-gray-600">Noida Address</div>
+        <div class="text-gray-900">House No - 10, New Ajant Park, Near Golden Palace, 201301 </div>
+        <div class="font-medium text-gray-600">Village Address</div>
+        <div class="text-gray-900">Village - Badilpur, Post- Babubel, Thana- Haldi, Ballia, Uttar Pradesh, 277402</div>
+      </div>
+    </div>
+
+    <!-- Religious Details Section -->
+    <div class="bio-section">
+      <div class="section-header">
+        <h2 class="text-lg">RELIGIOUS DETAILS:</h2>
+      </div>
+      <div class="section-content grid grid-cols-2 md:grid-cols-[1fr_2fr] gap-2 md:gap-4">
+        <div class="font-medium text-gray-600">Caste</div>
+        <div class="text-gray-900">Gahalaut (Rajput)</div>
+        <div class="font-medium text-gray-600">Patrilineal Gotra</div>
+        <div class="text-gray-900">Kasayp</div>
+        <div class="font-medium text-gray-600">Manglik Dosha</div>
+        <div class="text-gray-900">Non Manglik</div>
+      </div>
+    </div>
+
+    <!-- Educational & Professional Details Section -->
+    <div class="bio-section">
+      <div class="section-header">
+        <h2 class="text-lg">EDUCATIONAL & PROFESSIONAL DETAILS:</h2>
+      </div>
+      <div class="section-content grid grid-cols-2 md:grid-cols-[1fr_2fr] gap-2 md:gap-4">
+        <div class="font-medium text-gray-600">Qualification</div>
+        <div class="text-gray-900">Schooling from UP Board, M.A. from MGKVP, ADCA certified, skilled in Python, and a Microsoft Certified Data Engineer.</div>
+        <div class="font-medium text-gray-600">Occupation</div>
+        <div class="text-gray-900"><b>Sr. Data Analyst <strong>(Microsoft Certified)</strong></b>, working With <b>Gretex Group ( Part Time) & MR Tour & Traders Pvt. Ltd.(Full Time)</b></div>
+      </div>
+    </div>
+
+    <!-- Family Details Section -->
+    <div class="bio-section">
+      <div class="section-header">
+        <h2 class="text-lg">FAMILY DETAILS:</h2>
+      </div>
+      <div class="section-content grid grid-cols-2 md:grid-cols-[1fr_2fr] gap-2 md:gap-4">
+        <div class="font-medium text-gray-600">Father Name</div>
+        <div class="text-gray-900">Late Mr Ajay Kumar Singh</div>
+        <div class="font-medium text-gray-600">Mother Name</div>
+        <div class="text-gray-900">Smt. Shail Singh</div>
+        <div class="font-medium text-gray-600">Mother Occupation</div>
+        <div class="text-gray-900">House Wife</div>
+        <div class="font-medium text-gray-600">Siblings Detail</div>
+        <div class="text-gray-900">1 Brother (Unmarried)</div>
+      </div>
+    </div>
+
+    <!-- Skills & Interests Section -->
+    <div class="bio-section">
+      <div class="section-header">
+        <h2 class="text-lg">SKILLS & INTERESTS:</h2>
+      </div>
+      <div class="section-content grid grid-cols-2 md:grid-cols-[1fr_2fr] gap-2 md:gap-4">
+        <div class="font-medium text-gray-600">Skills</div>
+        <div class="text-gray-900">Responsible, Caring, Strong Management Skills, Coding & Problem-Solving</div>
+        <div class="font-medium text-gray-600">Hobbies</div>
+        <div class="text-gray-900">Reading, Listening to Music, Watching Informative Content & Movies, Learning New Computer Languages</div>
+      </div>
+    </div>
+
+    <!-- Thank You -->
+    <div class="bio-section">
+      <div class="thank-you">
+        THANK YOU FOR YOUR TIME
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Download as PDF
+    async function downloadBiodata() {
+      const { jsPDF } = window.jspdf;
+      const content = document.getElementById("main-content");
+
+      const canvas = await html2canvas(content, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL("image/png");
+
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save("Ajit_Singh_BioData.pdf");
+    }
+
+    // Splash Screen Effect
+    window.onload = function() {
+      const splashScreen = document.getElementById('splash-screen');
+      const mainContent = document.getElementById('main-content');
+      setTimeout(() => {
+        splashScreen.style.opacity = '0';
+        setTimeout(() => {
+          splashScreen.style.display = 'none';
+          mainContent.style.opacity = '1';
+          mainContent.classList.add('show-content');
+        }, 500);
+      }, 1500);
+    }
+  </script>
+</body>
+</html>
+
+
+
